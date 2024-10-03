@@ -1,0 +1,20 @@
+<div class="footer_text">
+	SearchAbility ® <b>Alpha</b> v0.4.1.0 &nbsp;&nbsp;&nbsp;	
+	<i class="icon-aws"></i>&nbsp;&nbsp;
+	<i class="icon-cc-visa"></i>&nbsp;&nbsp;
+	<i class="icon-cc-mastercard"></i>&nbsp;&nbsp;	
+	<i class="icon-facebook"></i>&nbsp;&nbsp;
+	<button id='bgtoggle' onclick="bgToggle();">Test</button>
+</div>
+<script>
+	var toggle = false;
+	function bgToggle() {
+		if( toggle == false) {
+			$('#main-container').addClass('bg');
+			toggle = true;
+		} else {
+			$('#main-container').removeClass('bg');
+			toggle = false;
+		}
+	}
+</script>

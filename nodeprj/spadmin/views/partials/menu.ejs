@@ -1,0 +1,47 @@
+<nav class="navbar navbar-expand-lg navbar-light">
+    <a class="navbar-brand" href="/">SearchAbility Admin - Logoff</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto p-2">
+            <li class="nav-item">
+				<button type="button" class="btn btn-link" onclick="menuproc(1)">Questions</button>
+            </li>
+            <li class="nav-item">
+				<button type="button" class="btn btn-link" onclick="menuproc(2)">Users</button>
+			</li>
+			<li class="nav-item">
+				<button type="button" class="btn btn-link" onclick="menuproc(3)">Players</button>
+            </li>
+            <li class="nav-item">
+				<button type="button" class="btn btn-link" onclick="menuproc(4)">System</button>
+            </li>
+		</ul>
+		<form id="tfrm" action="" method="post">
+			<input id='page' type="hidden" name="page" value="">
+			<input type="hidden" id="htt" name="htt" value="" />
+		</form>  
+    </div>
+  </nav>
+  <script>
+  function menuproc(ndx) {
+	switch( ndx ) {
+		case 1:
+			document.getElementById("tfrm").action = "/listq";
+			break;
+		case 2:
+			document.getElementById("tfrm").action = "/users/userlist";
+			break;
+		case 3:
+			document.getElementById("tfrm").action = "/plyr/playerlist";
+			break;
+		case 4:
+			document.getElementById("tfrm").action = "/getQATimers";
+			break;	
+	}
+	$('#htt').val( sessionStorage.getItem('searchin_token') );
+	$('#tfrm').submit();
+  }
+  </script>

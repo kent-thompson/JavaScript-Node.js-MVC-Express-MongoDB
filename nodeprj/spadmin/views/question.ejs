@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <% include partials/head %> 
+</head>
+<body>
+<% include partials/menu %>
+<div class="container-fluid md-2 text-center">    
+  <h4><%= page %></h4>
+  <div id='state'><%= state %></div>
+    <div class="row">
+    <div class="col-xs-12 col-md-8 text-left">
+		<form id='qform' action="/insertQuestion" method="POST">
+		<input type="hidden" id='qqq' name="htt" value="" />	
+		<% if( state == 'edit' ) { %>
+			<input type="hidden" id="eid" name="docid" value="<%= docid %>" />
+		<% } %>
+		<div class="form-group">
+			<label for="question">Question:</label>
+			<% if( state == 'edit' ) { %>
+				<input type="text" class="form-control" id="question" name="question" value="<%= ques %>" required >
+			<% } else { %>
+				<input type="text" class="form-control" id="question" name="question" aria-describedby="question" placeholder="Enter question" required >
+			<% } %>
+			<input type="hidden" id="a1" name="answer" />
+		</div>
+		<div class="form-group">
+			<label for="qOne">First Answer:</label>
+			<% if( state == 'edit' ) { %>
+				<input type="text" class="form-control" id="q1" name="ans" value="<%= ans0 %>" required >
+			<% } else { %>
+				<input type="text" class="form-control" id="q1" name="ans" placeholder="Index 1" required >
+			<% } %>	
+		</div>
+		<div class="form-group">
+			<label for="qTwo">Second Answer:</label>
+			<% if( state == 'edit' ) { %>
+				<input type="text" class="form-control" id="q2" name="ans" value="<%= ans1 %>" required >
+			<% } else { %>
+				<input type="text" class="form-control" id="q2" name="ans" placeholder="Index 2" required >
+			<% } %>		
+		</div>
+		<div class="form-group">
+			<label for="qThree">Third Answer:</label>
+			<% if( state == 'edit' ) { %>
+				<input type="text" class="form-control" id="q3" name="ans" value="<%= ans2 %>" required >
+			<% } else { %>	
+				<input type="text" class="form-control" id="q3" name="ans" placeholder="Index 3" required >
+			<% } %>		
+		</div>
+		<div class="form-group">			
+			<label for="qThree">Fourth Answer:</label>
+			<% if( state == 'edit' ) { %>			
+				<input type="text" class="form-control" id="q4" name="ans" value="<%= ans3 %>" required >
+			<% } else { %>				
+				<input type="text" class="form-control" id="q4" name="ans" placeholder="Index 4" required >
+			<% } %>
+		</div>
+		<div class="form-group">
+			<label for="ans-offset">Correct Answer Index</label>
+			<select id="ans-offset" class="form-control" required>
+			<% if( state == 'edit' ) { 
+				let opts = [1,2,3,4];
+				for( let i = 1; i < 5; ++i ) {
+					if( i == answer ) { %>
+						<option selected><%= i %></option>
+					<% } else { %>	
+						<option><%= i %></option>	
+					<% } %>
+			<% }
+			} %>
+			<% if( state == 'add' ) { %> 
+				<option selected value=''>Choose...</option>
+				<option value='1'>1</option>
+				<option value='2'>2</option>
+				<option value='3'>3</option>
+				<option value='4'>4</option>
+			<% } %>
+			</select>
+		</div>
+		<div class="form-row text-center">
+			<div class="col-12">		
+			<button type="button" class="btn btn-primary float-md-left" onClick='submitForm()'>Submit</button>
+			<button type="button" class="btn btn-primary" onclick="backlist()">Cancel</button>
+			<button type="button" class="btn btn-primary float-md-right" onClick='deleteQuestion()'>Delete</button>			
+			</div>
+		</div>	
+		</form>
+		<% include partials/footer %>
+	</div>
+  </div>
+</div>
+<div class="modal" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Search Party NOTICE!</div>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5>Do you really, Really, REALLY want to DELETE this Question?</h5>
+            </div>
+            <div class="modal-footer">
+				<button type="button" class="btn btn-sm btn-secondary" onClick='delQ()' data-dismiss="modal">Yes</button>
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">No</button>
+            </div>
+        </div>
+	</div>
+	<form id="delform" action="/deletequestion" method="post">
+		<input type="hidden" id="did" name="docid" value="" />
+		<input type="hidden" id='ddd' name="htt" value="" />
+	</form>
+	<form id='pagform' action="/listq" method="post">
+		<input type="hidden" id='ppp' name="page" value="">
+		<input type="hidden" id='plen' name="perPage" value="">
+		<input type="hidden" id='lll' name="htt" value="" />
+	</form>	
+	
+
+</div>
+<% include partials/script %>
+<script>
+gBasepath = null;
+$( document ).ready(function() {
+	gBasepath = getBasepath();	
+	var v = $("#ans-offset option:selected").val();
+	var q = '#q' + v;
+	$( q ).addClass('sp-bg-success');
+	$('input:text:visible:first', this).focus();
+});
+
+function submitForm() {
+	if( $('#state').text() == 'edit' ) {
+		document.getElementById('qform').action = '/updatequestion';
+	} else {
+		document.getElementById('qform').action = '/insertquestion';
+	}
+	$('#qqq').val( sessionStorage.getItem('searchin_token') );
+	var v = $("#ans-offset option:selected").val();
+	$('#a1').val( v - 1 );
+	$('#qform').submit();
+}
+function deleteQuestion() {
+	$('#myModal').modal('show');
+}
+function delQ() {
+	$('#did').val( $('#eid').val() );
+	$('#ddd').val( sessionStorage.getItem('searchin_token') );
+	$('#delform').submit();
+}
+function backlist() {
+	$('#ppp').val(-2); 		// last page
+	$('#plen').val( sessionStorage.getItem('qlist-perpage') );
+	$('#lll').val( sessionStorage.getItem('searchin_token') );
+	$('#pagform').submit();	
+}
+
+/*
+	let d = $('#_id').val();
+	$.ajax({
+		url: gBasepath + '/deletequestion',
+        dataType:'text',
+		type:'post',
+		headers: {"Authorization": 'Bearer '+ sessionStorage.getItem('searchin_token')},
+        data: { 'docid':$('#_id').val() }
+	})
+    .done( function( data, textStatus, jQxhr ) {
+		console.log( data );
+		window.location = gBasepath + '/listq/1';
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+            console.log( errorThrown );
+            alert( textStatus + ", " + errorThrown )
+	});
+*/	
+</script>
+</body>
+</html>

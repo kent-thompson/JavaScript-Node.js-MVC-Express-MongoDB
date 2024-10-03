@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="../stylesheets/style.css">
+	<script src="../javascripts/jquery-3.3.1.min.js"></script>
+	<script src="../bootstrap/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container-fluid text-center">
+	<div class="spborder">
+	<h4>SearchAbility Login</h4>
+	<form id='lform' action="/auth" method="POST">
+		<input type="hidden" id='htk' name="htt" value="" />
+		<div class="form-group">	
+			<label for="uname"><b>User Name:</b></label>
+			<input type="text" placeholder="Enter User Name" id="uname" name="uname" autofocus required>
+			</div>	
+			<div class="form-group">
+			<label for="pwd"><b>Password:</b></label>
+			<input type="password" placeholder="Enter Password" id="pwd" name="pwd" required>
+		</div>
+		<p><button id="lbtn" type="submit" class="btn btn-primary" >Login</button></p>
+		<p><input type="checkbox" checked="checked" name="remember" disabled> Remember Me</p>
+		<p><a href="#">Forgot Password?</a></p>
+	</form>
+	<form id="tfrm" action="/login" method="POST">
+		<input type="hidden" id="htt" name="htt" value="" />
+	</form>
+	<% include ../../searchparty/views/partials/footer %>
+	</div>
+</div>
+<script src="../javascripts/global.js"></script>
+<script>
+/*	
+gBasepath = null;
+function auth() {
+	gBasepath = getBasepath();
+	$.ajax({
+		url: gBasepath + '/auth',
+		dataType:'text',
+		type:'post',
+		data: { 'uname':$('#uname').val(), 'pwd':$('#pwd').val() }
+	})
+    .done( function( data, textStatus, jQxhr ) {
+		var d = JSON.parse( data );
+		if(d.state == true) {
+			sessionStorage.setItem('searchin_token', d.htt);
+			$('#htt').val(d.htt);
+			$('#tfrm').submit();
+		}
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+		console.log( errorThrown );
+		alert( textStatus + ", " + errorThrown )
+	});
+}
+*/
+// pressing enter on password field clicks login button
+$(function(){
+  $('#pwd').keypress(function(e){
+    if(e.which == 13) {
+		$('#lbtn').focus();
+		$('#lbtn').click();
+    }
+  });
+});
+/*
+function loadLogin() {
+	gBasepath = getBasepath();
+	$.ajax({
+		url: gBasepath + '/login',
+		dataType:'text',
+		type:'post',
+		beforeSend: function(jqXhr) {
+			//let a = 'Bearer '+ sessionStorage.getItem('searchin_token');
+			//jqXhr.setRequestHeader('Authorization', a);
+			jqXhr.setRequestHeader('Authorization', 'Bearer '+ sessionStorage.getItem('searchin_token'));
+		},
+		data: { 'uname':$('#uname').val(), 'psw':$('#psw').val() }    
+	})
+	.done( function( data, textStatus, jQxhr ) {
+		console.log( 'SUCCESS: SENT TOKEN' );
+		//jQxhr.setRequestHeader('Authorization', 'Bearer '+ sessionStorage.getItem('searchin_token'));
+		var t = sessionStorage.getItem('searchin_token')
+		if( t !== null ) {
+			$('#ttoken').val(sessionStorage.getItem('searchin_token'));
+			$('#tokfrm').submit();
+		} else {
+			alert('Please Login to Searchin');
+		}
+	})
+	.fail( function( jqXhr, textStatus, errorThrown ) {
+		console.log( textStatus + ", " + errorThrown  );
+	});
+}
+*/
+</script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<% include partials/head %>
+</head>
+<body>
+<% include partials/menu %>
+<div class="container-fluid md-2">
+	<h4><%= page %></h4>
+	<button type="button" class="btn btn-primary btn-vertical-bmargin" onclick="addPlayer()">Add Player</button>
+	<table id="playertable" class="table table-bordered table-hover">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Name</th>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+	<p><button type="button" class="btn btn-primary btn-vertical-bmargin" onclick="addPlayer()" >Add Player</button></p>
+	<% include partials/footer %>
+</div>
+<div class="modal" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">SearchAbility Players</div>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id='pform' action="" method="POST">
+                    <input id="docid" name="docid" value="" />
+                    <input type="hidden" id='pdd' name="htt" value="" />
+                    <div class="form-group">	
+                        <label for="pname"><b>Username - Screen Name</b></label><br/>
+                        <input class="form-control" placeholder="Enter Name" id='name' name="name" value='' autofocus required>
+                    </div>
+                    <div class="form-group">	
+                        <label for="pname"><b>First Name</b></label><br/>
+                        <input class="form-control" placeholder="Enter First Name" id='fname' name="fname" value='' autofocus required>
+                    </div>
+                    <div class="form-group">	
+                        <label for="pname"><b>Last Name</b></label><br/>
+                        <input class="form-control" placeholder="Enter Last Name" id='lname' name="lname" value='' autofocus required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email"><b>Email</b></label><br/>
+                        <input class="form-control" placeholder="Enter Email" id='email' name="email" value='' autofocus required>
+                    </div>
+                    <div class="form-group">
+                        <label for="hscore"><b>High Score</b></label><br/>
+                        <input class="form-control input-sm" id='hscore' name="hscore" value='' autofocus readonly>
+                    </div>
+                    <div class="form-group">	
+                        <label for="bdate"><b>Birthdate</b></label><br/>
+                        <input class="form-control" placeholder="Enter Birthdate" id='bdate' name="bdate" value='' autofocus required>
+                    </div>
+                    <div class="form-group">
+                        <label for="psw"><b>Password</b></label><br/>
+                        <input type="password" class="form-control" placeholder="Enter Password" id='pwd' name="pwd" value='' >
+                    </div>		
+                    <div class="form-row text-center">
+                        <div class="col-12">	
+                        <button type="button" class="btn btn-primary float-md-left" onclick="ajaxMe( 1 )">Save</button>
+                        <button type="button" class="btn btn-primary" onclick="$('#myModal').modal('hide');">Cancel</button>
+                        <button type="button" class="btn btn-primary float-md-right" onclick="ajaxMe( 3 )">Delete</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+	</div>
+    </div>
+</div>
+<% include partials/script %>
+<script>
+var gBasepath = getBasepath();
+var gDtable = null;
+var gApiPath = null;
+var gID = null;
+
+$(document).ready(function() {
+    gDtable = $('#playertable').DataTable({
+		ajax: {
+			url: '/api/players',
+			dataSrc: '',
+			headers: {"Authorization": 'Bearer '+ sessionStorage.getItem('searchin_token')}
+		},
+		"columns": [
+            { "data": "_id", "width" : "20%" },
+			{ "data": "uname" }
+		],
+		"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+		"pageLength": 25
+    });
+});
+
+// add empty player form
+function addPlayer() {
+    gApiPath = gBasepath + '/api/addplayer';
+    gClearForm( $('#pform') );
+
+    $('#myModal').modal({
+        backdrop: 'static',
+        keyboard: false
+	});    
+}
+
+// selection - Update / Delete form
+// -----------------------
+$("#playertable").on("dblclick", "tr", function(e) {
+    gApiPath = gBasepath + '/api/updateplayer';
+
+    gID = $(this).children(':first').html();
+    getPlayerData( gID );
+
+    $('#myModal').modal({
+        backdrop: 'static',
+        keyboard: false
+	});    
+});
+ 
+// ***  API CALLS ***
+function ajaxMe( action ) {	    // handles add, update, delete
+    let ddata = null;
+    if( action === 1 ) {        // 1 is valid for add and edit, gApiPath are set in events
+        ddata = $('#pform').serialize();
+    } else {
+        gApiPath = gBasepath + '/api/deleteplayerbyid';
+        ddata = {'docid':gID};    
+    }
+    $.ajax({
+		url: gApiPath,
+		type:'post',
+        dataType:'json',
+		headers: {"Authorization": 'Bearer '+ sessionStorage.getItem('searchin_token')},
+        data: ddata
+    })
+    .done( function( data, textStatus, jQxhr ) {
+        if( textStatus == 'success' ) {
+            $('#myModal').modal('hide');
+            gDtable.ajax.reload();
+        }
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+            console.log(xhr, resp, text);
+            alert( textStatus + ", " + errorThrown )
+    });
+}
+
+/*
+function saveMe() {		// add or edit player
+    $.ajax({
+		url: gApiPath,
+		type:'post',
+        dataType:'json',
+		headers: {"Authorization": 'Bearer '+ sessionStorage.getItem('searchin_token')},
+        data: $("#pform").serialize()
+    })
+    .done( function( data, textStatus, jQxhr ) {
+        if( textStatus == 'success' ) {
+            $('#myModal').modal('hide');
+            gDtable.ajax.reload();
+        }
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+            console.log(xhr, resp, text);
+    });
+}
+
+function deleteMe() {
+	$.ajax({
+		url: gBasepath + '/api/deleteplayerbyid',
+        dataType:'json',
+		type:'post',
+		headers: {"Authorization": 'Bearer '+ sessionStorage.getItem('searchin_token')},
+        data: { 'docid':gID }
+	})
+    .done( function( data, textStatus, jQxhr ) {
+        if( textStatus == 'success' ) {
+            $('#myModal').modal('hide');
+            gDtable.ajax.reload();
+        }
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+        console.log( errorThrown );
+        alert( textStatus + ", " + errorThrown )
+	});
+}
+*/
+
+function getPlayerData( id ) {
+	$.ajax({
+		url: gBasepath + '/api/getplayerbyid',
+        dataType:'json',
+		type:'post',
+        headers: {"Authorization": 'Bearer '+ sessionStorage.getItem('searchin_token')},
+        data: { 'docid': id }
+	})
+    .done( function( data, textStatus, jQxhr ) {
+        $('#docid').val(id);
+		$('#name').val(data.uname);
+		$('#fname').val(data.fname);
+		$('#lname').val(data.lname);				
+		$('#email').val(data.email);
+		$('#hscore').val(data.hscore);
+		$('#bdate').val(data.bdate);
+		$('#psw').val(data.pwd);
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+        console.log( errorThrown );
+        alert( textStatus + ", " + errorThrown )
+	});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+body {
+  /*padding:1em;*/
+  font:1em "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+a {
+  color: #00B7FF;
+}
+.state {
+	display: none;
+}
+.spborder {
+	border: 1px solid green;
+	margin:1em;
+	padding:1em;
+}
+.sp-bg-success {
+	background-color:rgb(205, 236, 223);
+}
+.greenchar {
+	color: green;
+}
+.btn-vertical-bmargin {
+	margin-bottom: 1em;
+}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<% include partials/head %></head>
+<body>
+	<% include partials/menu %>
+<div class="container-fluid">
+	<div class="spborder">
+	<h5>iSearchin Systems Page</h5><br>
+	<form id='sysfrm' action="/updateQATimers" method="POST">
+		<input type="hidden" id="docid" name="docid" value="<%= docid %>" />
+		<input type="hidden" id='ttt' name="htt" value="" />
+		<div class="form-group">	
+			<label for="qtimer"><b>Question Time Timer (seconds)</b></label><br/>
+			<input class="form-control" placeholder="Enter Seconds" id='qtimer' name="qtimer" value='<%= qtimer %>' autofocus required >
+		</div>
+		<div class="form-group">	
+			<label for="wtimer"><b>Intermission / Wait Time Timer (seconds)</b></label><br/>
+			<input class="form-control" placeholder="Enter Seconds" id='wtimer' name="wtimer" value='<%= wtimer %>' autofocus required>
+		</div>
+		<div class="form-row text-center">
+			<div class="col-12">	
+			<button type="button" class="btn btn-primary float-md-left" onclick='savefrm()'>Save</button>
+			<button type="button" class="btn btn-primary" onclick="history.back()">Cancel</button>
+			</div>
+		</div>
+	</form>
+	</div>
+	<% include partials/footer %>
+</div>
+<% include partials/script %>
+<script>
+gBasepath = null;
+gDBState = null;
+$( document ).ready(function() {
+	gBasepath = getBasepath();
+	if( $('#docid').val() == null || $('#docid').val() === '') {
+		gDBState = 'add';
+	} else {
+		gDBState = 'edit';
+	}
+});
+
+function savefrm() {
+	$('#ttt').val( sessionStorage.getItem('searchin_token') );
+	$('#sysfrm').submit();
+}
+
+/*
+function saveMe() {
+	$.ajax({
+		url: gBasepath + '/users/deleteuserbyid',
+        dataType:'text',
+        type:'post',
+        data: { 'docid':$('#docid').val() }    
+	})
+    .done( function( data, textStatus, jQxhr ) {
+		//window.location = '/users/userlist';
+		consold.log('SystemsPage Saved');
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+            console.log( errorThrown );
+            alert( textStatus + ", " + errorThrown )
+	});
+}
+*/
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<nav class="navbar navbar-toggleable-md navbar-dark bg-faded">
+		<a class="navbar-brand" href="/">SearchAbility
+			<img src="./images/globe2.png" width="50" height="50" alt="logo"/>
+		</a>
+		<span id='header-text' class='navbar-text'>Welcome <b><%= unametag %> -</b> Search the World for Answers</span>
+
+    <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon">   
+			<!-- <i class="fas fa-bars"></i> -->
+		</span>
+	</button>
+    <div class="navbar-expand-lg collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav">
+            <li id='menu-login' class="nav-item">
+                <a class="nav-link" href="/login">LOGIN</a>
+            </li>
+            <!--
+            <li id='menu-play' class="nav-item">
+                <a class="nav-link" href="#" onclick="postply(); return false;" >PLAY</a>
+            </li>
+            -->
+            <li id='menu-account' class="nav-item">
+                <a class="nav-link" href="#" onclick="postaccount(); return false;">ACCOUNT</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/new-account"><b>SIGN UP</b></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/contact">CONTACT US</a>
+            </li>
+        </ul>
+        <form id='accform' action="/account" method="post">
+            <input type="hidden" id='aaa' name="htt" value="" />
+        </form>	
+        <form id='plyform' action="/index" method="post">
+            <input type="hidden" id='bbb' name="htt" value="" />
+        </form>	
+        <script>
+            function postaccount() {
+                stopClock();
+                $('#aaa').val( $('#token').val() );
+                $('#accform').submit();
+            }
+            function postply() {
+                $('#bbb').val( $('#token').val() );
+                $('#plyform').submit();
+            }
+        </script>
+        <!--
+         navbar-expand-lg navbar-light bg-light
+        -->
+	</div>
+  </nav>

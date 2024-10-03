@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<% include partials/head %></head>
+<body>
+	<% include partials/menu %>
+<div class="container-fluid">
+	<div class="spborder">
+	<h5>iSearchin User Account</h5><br>
+	<form id="qform" action="/users/updateuser" method="POST">
+		<input type="hidden" id="docid" name="docid" value="<%= docid %>" />
+		<input type="hidden" id='hdd' name="htt" value="" />
+		<div class="form-group">	
+			<label for="uname"><b>Username</b></label><br/>
+			<input class="form-control" placeholder="Enter Username" id='uname' name="uname" value='' autofocus >
+		</div>
+		<div class="form-group">	
+			<label for="email"><b>Email</b></label><br/>
+			<input class="form-control" placeholder="Enter Email" id='email' name="email" value='' autofocus required>
+		</div>
+		<div class="form-group">	
+				<label for="comment"><b>Comment</b></label><br/>
+				<input class="form-control" placeholder="Enter Comment" id='comment' name="comment" value='' autofocus required>
+		</div>
+		<div class="form-group">	
+				<label for="bdate"><b>Birthdate</b></label><br/>
+				<input class="form-control" placeholder="Enter Birthdate" id='bdate' name="bdate" value='' autofocus required>
+		</div>
+		<div class="form-group">
+			<label for="psw"><b>Password</b></label><br/>
+			<input type="password" class="form-control" placeholder="Enter Password" id='psw' name="psw" value='' readonly>
+		</div>
+		<div class="form-row text-center">
+			<div class="col-12">	
+			<button type="submit" class="btn btn-primary float-md-left" onclick="saveMe()">Save</button>
+			<button type="button" class="btn btn-primary" onclick="history.back()">Cancel</button>
+			<button type="button" class="btn btn-primary float-md-right" onclick="deleteMe()">Delete</button>
+			</div>
+		</div>
+	</form>
+	<form id="delfrm" action="/users/deleteuserbyid" method="post">
+		<input type="hidden" id="did" name="docid" value="<%= docid %>" />
+		<input type="hidden" id='ddd' name="htt" value="" />
+	</form>
+	</div>
+	<% include partials/footer %>
+</div>
+<% include partials/script %>
+<script>
+gBasepath = null;
+gDBState = null;
+$( document ).ready(function() {
+	gBasepath = getBasepath();
+	if( $('#docid').val() == null || $('#docid').val() === '') {
+		gDBState = 'add';
+	} else {
+		gDBState = 'edit';
+		getUserData();
+	}
+});
+
+function saveMe() {
+	$('#hdd').val( sessionStorage.getItem('searchin_token') );
+	$('#qform').submit();
+}
+
+function deleteMe() {
+	$('#ddd').val( sessionStorage.getItem('searchin_token') );
+	$('#delfrm').submit();
+}
+
+function getUserData() {
+	$.ajax({
+		url: gBasepath + '/api/getuserbyid',
+        dataType:'text',
+        type:'post',
+		beforeSend: function(xhr) {
+			xhr.setRequestHeader('Authorization', 'Bearer '+ sessionStorage.getItem('searchin_token'));
+		},		
+        data: { 'docid':$('#docid').val() }    
+	})
+    .done( function( data, textStatus, jQxhr ) {
+		var jp = JSON.parse(data);
+		$('#uname').val(jp.name);
+		$('#email').val(jp.email);
+		$('#comment').val(jp.comment);
+		$('#bdate').val(jp.bdate);
+		$('#psw').val(jp.pwd);
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+            console.log( errorThrown );
+            alert( textStatus + ", " + errorThrown )
+	});
+}
+</script>
+</body>
+</html>

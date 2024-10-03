@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<% include partials/head %></head>
+<body>
+	<% include partials/menu %>
+<div class="container-fluid">
+	<div class="spborder">
+	<h4><%= page %></h4><br>
+	<form id='pform' action="" method="POST">
+		<input id="docid" name="docid" value="<%= docid %>" />
+		<input type="hidden" id='pdd' name="htt" value="" />
+		<div class="form-group">	
+			<label for="pname"><b>Username - Screen Name</b></label><br/>
+			<input class="form-control" placeholder="Enter Name" id='name' name="name" value='' autofocus required>
+		</div>
+		<div class="form-group">	
+			<label for="pname"><b>First Name</b></label><br/>
+			<input class="form-control" placeholder="Enter First Name" id='fname' name="fname" value='' autofocus required>
+		</div>
+		<div class="form-group">	
+			<label for="pname"><b>Last Name</b></label><br/>
+			<input class="form-control" placeholder="Enter Last Name" id='lname' name="lname" value='' autofocus required>
+		</div>
+		<div class="form-group">
+			<label for="email"><b>Email</b></label><br/>
+			<input class="form-control" placeholder="Enter Email" id='email' name="email" value='' autofocus required>
+		</div>
+		<div class="form-group">
+			<label for="hscore"><b>High Score</b></label><br/>
+			<input class="form-control input-sm" id='hscore' name="hscore" value='' autofocus readonly>
+		</div>
+		<div class="form-group">	
+			<label for="bdate"><b>Birthdate</b></label><br/>
+			<input class="form-control" placeholder="Enter Birthdate" id='bdate' name="bdate" value='' autofocus required>
+		</div>
+		<div class="form-group">
+			<label for="psw"><b>Password</b></label><br/>
+			<input type="password" class="form-control" placeholder="Enter Password" id='pwd' name="pwd" value='' >
+		</div>		
+		<div class="form-row text-center">
+			<div class="col-12">	
+			<button type="submit" class="btn btn-primary float-md-left" onclick="saveMe()">Save</button>
+			<button type="button" class="btn btn-primary" onclick="history.back()">Cancel</button>
+			<button type="button" class="btn btn-primary float-md-right" onclick="deleteMe()">Delete</button>
+			</div>
+		</div>
+	</form>
+	</div>
+	<% include partials/footer %>
+</div>
+<% include partials/script %>
+<script>
+gBasepath = null;
+gDBState = null;
+$( document ).ready(function() {
+	gBasepath = getBasepath();
+	if( $('#docid').val() == null || $('#docid').val() === '') {
+		gDBState = 'add';
+        document.getElementById('pform').action = '/plyr/addplayer';
+	} else {
+		gDBState = 'edit';
+		document.getElementById('pform').action = '/plyr/updateplayer';
+		getUserData();
+	}
+});
+
+function saveMe() {		// add or edit player
+	$('#pdd').val( sessionStorage.getItem('searchin_token') );
+	$('#pform').submit();
+}
+
+function deleteMe() {
+	$.ajax({
+		url: gBasepath + '/api/deleteplayerbyid',
+        dataType:'json',
+		type:'post',
+		headers: {"Authorization": 'Bearer '+ sessionStorage.getItem('searchin_token')},
+        data: { 'docid':$('#docid').val() }    
+	})
+    .done( function( data, textStatus, jQxhr ) {
+        if( textStatus == 'success' ) {
+            //history.back();
+            $.ajax({
+                url: gBasepath + '/api/deleteplayerbyid',
+                dataType:'json',
+                type:'post',
+                headers: {"Authorization": 'Bearer '+ sessionStorage.getItem('searchin_token')},
+                data: { 'docid':$('#docid').val() }    
+	        })
+        }
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+        console.log( errorThrown );
+        alert( textStatus + ", " + errorThrown )
+	});
+}
+
+function getUserData() {
+	$.ajax({
+		url: gBasepath + '/api/getplayerbyid',
+        dataType:'json',
+		type:'post',
+		//headers: { "Access-Control-Allow-Origin" : "*" }, 
+        //headers: { "Access-Control-Allow-Headers" },
+        //headers: { "Origin, X-Requested-With, Content-Type, Accept" },
+        headers: {"Authorization": 'Bearer '+ sessionStorage.getItem('searchin_token')},
+        data: { 'docid':$('#docid').val() }    
+	})
+    .done( function( data, textStatus, jQxhr ) {
+		//var jp = JSON.parse(data);
+		$('#name').val(data.uname);
+		$('#fname').val(data.fname);
+		$('#lname').val(data.lname);				
+		$('#email').val(data.email);
+		$('#hscore').val(data.hscore);
+		$('#bdate').val(data.bdate);
+		$('#psw').val(data.pwd);
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+        console.log( errorThrown );
+        alert( textStatus + ", " + errorThrown )
+	});
+}
+</script>
+</body>
+</html>

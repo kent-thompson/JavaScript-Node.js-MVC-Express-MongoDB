@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <% include partials/head %> 
+</head>
+<body>
+<% include partials/menu %>
+<div class='main-color-bar'>
+    <h4 id='pstate'></h4>
+</div>
+<div id='main-container' class="container-fluid md-2 text-center">
+    <div class="row">
+    <div id='question-cnt' class="col-xs-12 col-md-8 text-left">
+        <input type="hidden" id="docid" name="ndocid" value="" />
+        <input type="hidden" id="token" name="htt" value="<%= token %>" />
+		<input type="hidden" id="question_timer" name="question_timer" value="<%= question_timer %>" />
+		<input type="hidden" id="wait_timer" name="wait_timer" value="<%= wait_timer %>" />
+     
+        <div><i class="icon-clock"></i>&nbsp;Time Left:</div>
+		<div id='clockdiv' class='cdtimer col-md-2 text-center' ></i></div>
+        <div id='status'></div>
+        <div class="qdiv"><br>
+            <p>Question:</p>            
+            <div id='qst' data-content= "" ></div>
+		</div><br>
+		<div class='ansbox'>
+        <ul id='answers' class="list-group">
+            <li class="list-group-item answers ansbox">
+                <span class="badge badge-success"></span>
+                Answers to the Question Will Pop Up Here
+            </li>
+            <li class="list-group-item ansbox">
+                <span class="badge badge-secondary"></span>
+                Be Sure to Press the Submit Answer Button
+            </li>
+            <li class="list-group-item ansbox">
+                <span class="badge badge-secondary"></span>
+                Be Ready!
+            </li>
+            <li class="list-group-item ansbox">
+                <span class="badge badge-secondary"></span>
+                Good Luck!
+            </li>
+		</ul>
+		</div>
+		<br>
+		<button type="button" id='ansbtn' class="btn opt-color-btn btn-block"><b>Submit Answer</b></button>
+        <!-- <button type="button" id='ansbtn' class="btn btn-success btn-block"><b>Stop Timer</b></button> -->
+		<!-- <button type="button" id='nextbtn' class="btn btn-secondary btn-block"><b>Next Question</b></button> -->
+
+        <div id='separ' class='separ-off' >&nbsp;</div>
+    </div>
+    <div class="col-xs-6 col-md-4 text-left sp-border"> 
+        <div class="ldr-brd-hdr"><span>Player Statistics &nbsp;&nbsp;&nbsp;<i class="icon-library"></i></span></div>
+        <div id = 'sparklebox' class='ldr-brd-subhdr'><b>Wins: <span id='wins'>0</span></b> &nbsp;&nbsp;&nbsp;Misses: <span id='losses'>0</span></div>
+		<div class="ldr-brd-hdr"><span >Leader Board &nbsp;&nbsp;&nbsp;<i class="icon-library"></i></span></div>
+        <p id='wt10' class='plyr-brd-subhdr'><b>Worldwide Top 10</b></p>
+		<p class='plyr-brd-subhdr'><b>Vs. My City</b></p>
+		<p class='plyr-brd-subhdr'><b>Vs. My Search Party</b></p>
+    </div>
+  </div>
+</div>
+<div class="modal" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">SearchAbility Advice</div>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5>Please Pick an Anwser</h5>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<% include partials/footer %>
+<% include partials/script %>
+<script>
+const QUESTION_STATE = 1;
+const ANS_STATE = 2;
+var gLastIdx = -1;
+var gBasepath = null;
+var gCurrState = null;
+var gQDuration = null;
+var gAnsDuration = null;
+var gSelected = false;
+var gAnswered = false;
+var gAudio = new Audio();
+$( document ).ready(function() {
+    if( $('#token').val() != "" ) { // TODO
+        $('#menu-account').css('display', 'inline');
+        $('#menu-play').css('display', 'inline');
+        $('#menu-login').css('display', 'none');
+    }
+    $("#sparklebox").sparkle({ 
+        color: "rainbow",
+        count: 60,
+        minSize: 6,
+        maxSize: 9,
+        overlap: 20
+     })
+     .off("mouseover.sparkle")
+     .off("mouseout.sparkle")
+     .off("focus.sparkle")
+     .off("blur.sparkle");
+    if( sessionStorage.getItem('wins') == null ) 
+        sessionStorage.setItem('wins', 0);
+    if( sessionStorage.getItem('losses') == null )
+        sessionStorage.setItem('losses', 0);
+    if( sessionStorage.getItem('stoken') == null && $('#token').val() != "" )
+        sessionStorage.setItem('stoken', $('#token').val() );
+	gBasepath = getBasepath();
+	gQDuration = $('#question_timer').val();
+	gAnsDuration = $('#wait_timer').val();
+
+	$.getJSON(gBasepath + '/api/topplayers', function(result) {
+        $('#wt10').append('<br>');
+		$.each(result, function(i, obj){
+			$('#wt10').append(obj.uname + '<br>');
+		});
+    });
+    $.ajax({
+		url: gBasepath + '/api/fquestion',
+        dataType:'json',
+        type:'post',
+        data: {'docid': null }
+    })
+    .done( function( data, textStatus, jQxhr ) {
+        $('#docid').val(data._id);
+		$('#qst').attr('data-content', data.question);
+		gCurrState = QUESTION_STATE;
+	    initializeClock(QUESTION_STATE);
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+		console.log( errorThrown );
+		alert( textStatus + ", " + errorThrown )
+    });
+});
+
+// selection
+$('ul li').on('click', function() {
+    let idx = $(this).parent().children().index(this);
+    if( gLastIdx === idx ){ return; }
+    $(this).parent().children().eq(gLastIdx).removeClass('active');
+    $(this).parent().children().eq(idx).addClass('active');
+    gLastIdx = idx;
+    gSelected = true;
+    //console.log( 'Selected: ' + gSelected );
+});
+
+$('#ansbtn').click( function() { // SUBMIT button
+    if( gLastIdx < 0 ) {
+        //$('#myModal').modal('show');
+        recordFail();
+        return;
+    }
+    $.ajax({
+		url: gBasepath + '/api/answer',
+        dataType:'text',
+        type:'post',
+        data: {'answer':gLastIdx, 'docid':$('#docid').val(), 'htt': $('#token').val()  }
+    })
+    .done( function( data, textStatus, jQxhr ) {
+        if( data == 'W') {
+            var w = sessionStorage.getItem('wins');
+            $('#wins').text(++w);
+            sessionStorage.setItem('wins', w);
+            $("#sparklebox").trigger("start.sparkle");
+            //5_Sec_Crowd_Cheer-Mike_Koenig-1562033255.mp3
+            // glass_ping-Go445-1207030150.mp3
+            gAudio.src = gBasepath + '/sounds/5_Sec_Crowd_Cheer-Mike_Koenig-1562033255.mp3';
+            gAudio.play();
+            setTimeout(function() {
+                $("#sparklebox").trigger("stop.sparkle");
+            }, 5000);
+        } else {
+            recordFail();
+        }
+        gSelected = false;
+        //console.log( 'Selected: ' + gSelected );
+        gAnswered = true;
+        //console.log( 'Answered: ' + gAnswered );
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+            console.log( errorThrown );
+            alert( textStatus + ", " + errorThrown )
+    });
+    initializeClock(QUESTION_STATE); // KDT:
+});
+
+function recordFail() {
+    var l = sessionStorage.getItem('losses');
+    $('#losses').text(++l);
+    sessionStorage.setItem('losses', l);
+    /*
+    $('#win-bdr').css('background-color', '#df3062');
+    $( "#win-bdr" ).fadeTo( 4000, 0.5, function() {
+        // Animation complete.
+        $('#win-bdr').css('background-color', '#2196f3');
+        $('#win-bdr').css('color', '#FFF');
+        $('#win-bdr').css('opacity', '1');
+    });
+    */
+}
+
+function nextquestion() {
+	$('#status').empty();
+	$('#answers').removeClass('shown');
+	$('#answers').addClass('hidden');
+    $('#answers').children().eq(gLastIdx).removeClass('active');
+    gLastIdx = -1;
+    $.ajax({
+		url: gBasepath + '/api/nextquestion',
+        dataType:'json',
+        type:'post',
+        data: {'docid':$('#docid').val() }
+    })
+    .done( function( data, textStatus, jQxhr ) {
+        $('#docid').val(data._id);
+        $('#qst').attr('data-content', data.question);
+        ////////////////////////////////////////////////////////////////////////////////////////////
+		$('#ansbtn').prop('disabled', true);
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+		console.log( errorThrown );
+		alert( textStatus + ", " + errorThrown )
+    });
+}
+
+var gTimeinterval;
+var gDuration = 0;
+var gClock = null;
+var gEndtime = null;
+function initializeClock(state) {
+	gEndtime = new Date();
+	if( state == QUESTION_STATE ) {
+		gDuration = Number(gQDuration);
+		$('#pstate').html("Search the World for Answers");
+	} else {
+		gDuration = Number(gAnsDuration);
+		$('#pstate').html('Click and Submit Answer');
+    }
+    gClock = document.getElementById('clockdiv');
+    gEndtime.setSeconds(gEndtime.getSeconds() + gDuration);
+    var tmp = getTimeLeft(gEndtime);
+    if( tmp.seconds < 10 ) {        
+		tmp.seconds = ('0' + tmp.seconds).slice(-2);
+	}
+    gClock.innerHTML = tmp.minutes + ':' + tmp.seconds;
+    gTimeinterval = setInterval( updateClock, 1000 );
+}
+
+function stopClock() {
+    clearInterval( updateClock );
+}
+
+function updateClock() {
+    var t = getTimeLeft(gEndtime);
+    if( t.seconds < 10 ) {        
+		t.seconds = ('0' + t.seconds).slice(-2);
+	}
+	if( t.total <= 0) { 		// TIME UP Event
+        clearInterval(gTimeinterval);
+
+        if( gCurrState == QUESTION_STATE ) {    // answering questions state
+			getanswers();
+            gCurrState = ANS_STATE;
+            initializeClock(ANS_STATE);
+            console.log('ANS_STATE');
+
+            gSelected = false;
+            gAnswered = false;
+			return;
+		}
+		if( gCurrState == ANS_STATE ) {     
+            if( gAnswered == true ) {       // already answered earlier - status already updated
+                gAnswered = false;          // reset
+                //console.log( 'Answered: ' + gAnswered );
+            } else {
+                if( gSelected == false ) {
+                    recordFail();
+                } else {
+                    $('#ansbtn').trigger('click');  // selected but not sent yet, send now
+                }
+            }
+            gCurrState = QUESTION_STATE;
+            console.log('QUESTION_STATE');
+			nextquestion();
+            initializeClock(QUESTION_STATE);
+
+            gSelected = false;
+            //console.log( '***Selected: ' + gSelected );
+            gAnswered = false;
+            //console.log( 'Answered: ' + gAnswered );
+			return;
+		}
+	}
+	gClock.innerHTML = t.minutes + ':' + t.seconds;
+}
+
+function getanswers() {
+    $.ajax({
+		url: gBasepath + '/api/getanswers',
+        dataType:'text',
+        type:'post',
+        data: { 'docid':$('#docid').val() }
+    })
+    .done( function( data, textStatus, jQxhr ) {
+		var d = JSON.parse(data);
+         $.each( d, function(idx, item) {
+            var t = '<span class="badge badge-danger">' + (idx+1) + '</span>';
+            t += '&nbsp;&nbsp;' + item; // + '</li>';
+            $('#answers').children().eq(idx).html( t );
+		});
+		$('#answers').removeClass('hidden');
+        $('#answers').addClass('shown');
+        ///////////////////////////////////////////////////
+		$('#ansbtn').prop('disabled', false);
+		
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+            console.log( errorThrown );
+            alert( textStatus + ", " + errorThrown )
+    });	
+}
+
+function sendanswer() {     // send chosen answer to server
+    if( gLastIdx < 0 ) {
+        $('#myModal').modal('show');
+        return;
+    }
+    $.ajax({
+		url: gBasepath + '/api/getanswers',
+        dataType:'text',
+        type:'post',
+        data: {'answer':gLastIdx, 'docid':$('#docid').val() }
+    })
+    .done( function( data, textStatus, jQxhr ) {
+         $.each( data.ans, function(idx, item) {
+            var t = '<span class="badge badge-secondary">' + (idx+1) + '</span>';
+            t += '&nbsp;&nbsp;' + item; // + '</li>';
+            $('#answers').children().eq(idx).html( t );
+		});
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+		console.log( errorThrown );
+		alert( textStatus + ", " + errorThrown )
+    });	
+}
+
+function getTimeLeft( endtime ) {
+	var t = Date.parse(gEndtime) - Date.parse(new Date());
+	var seconds = Math.floor( (t/1000) % 60 );
+	var minutes = Math.floor( (t/1000/60) % 60 );
+	return {
+		'total': t,
+		'minutes': minutes,
+		'seconds': seconds
+	};
+}
+
+/*
+$('#nextbtn').click( function() {
+    $('#status').empty();
+    $('#answers').children().eq(gLastIdx).removeClass('active');
+    gLastIdx = -1;
+    $.ajax({
+		url: gBasepath + '/api/nexta',
+        dataType:'json',
+        type:'post',
+        data: {'docid':$('#docid').val() }
+    })
+    .done( function( data, textStatus, jQxhr ) {
+        $('#docid').val(data._id);
+		$('#qst').attr('data-content', data.question);
+        $.each( data.ans, function(idx, item) {
+            var t = '<span class="badge badge-danger">' + (idx+1) + '</span>';
+            t += '&nbsp;&nbsp;' + item;
+            $('#answers').children().eq(idx).html( t );
+        });
+    })
+    .fail( function( jqXhr, textStatus, errorThrown ) {
+		console.log( errorThrown );
+		alert( textStatus + ", " + errorThrown )
+    });
+    initializeClock(COUNTDOWN);
+});
+*/
+</script>
+</body>
+</html>

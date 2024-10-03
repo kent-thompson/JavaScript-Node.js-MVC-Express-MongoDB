@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="../stylesheets/style.css">
+	<script src="../javascripts/jquery-3.3.1.min.js"></script>
+	<script src="../bootstrap/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+	<div class="spborder">
+	<p><h4>iSearchin Admin New Account</h4></p>
+	<form id"nufrm" action="/users/createuser" method="POST">
+		<input type="hidden" id='hdd' name="htt" value="" />
+		<div class="form-group">	
+			<label for="uname"><b>Username</b></label><br/>
+			<input class="form-control" placeholder="Enter Username" name="uname" autofocus required>
+		</div>
+		<div class="form-group">	
+			<label for="email"><b>Email</b></label><br/>
+			<input class="form-control" placeholder="Enter email" name="email" autofocus required>
+		</div>
+		<div class="form-group">	
+				<label for="bdate"><b>Birthdate</b></label><br/>
+				<input class="form-control" placeholder="Enter Birthdate" id='bdate' name="bdate" value='' autofocus required>
+		</div>
+		<div class="form-group">
+			<label for="psw"><b>Password</b></label><br/>
+			<input class="form-control" placeholder="Enter Password" name="psw" required>
+		</div>
+		<p>Press <i>Create New Account</i> to proceed. The account should be created. You must then <b>login into that account</b> from the login screen to get a Token to use this new account.</p>
+		<button type="submit" class="btn btn-primary" onclick="createnew()">Create New Account</button>
+		<button type="button" class="btn btn-primary" onclick="history.back()">Back</button>
+	</form>
+	</div>
+	<% include partials/footer %>
+</div>
+<script>
+	function createnew() {
+		$('#hdd').val( sessionStorage.getItem('searchin_token') );
+		$('#nufrm').submit();
+	}
+</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <% include partials/head %> 
+</head>
+<body>
+<% include partials/menu %>
+<div class="container-fluid md-2">
+	<h4><%= page %></h4>
+	<button type="button" class="btn btn-primary btn-vertical-bmargin" onclick="loadnewform()">Add Question</button><br>
+	<select id="dd_perpage" onchange="perPageChange(this.value)">
+		<option value="10">10</option>
+		<option value="25">25</option>
+		<option value="50">50</option>
+		<option value="100">100</option>
+	</select> Rows per page
+	<table id="qtable" class="table table-bordered table-hover">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Question</th>
+			</tr>
+		</thead>
+			<tbody>
+			<% for (var i = 0; i < qlist.length; ++i) { %>			
+				<tr>
+					<td><%= qlist[i]._id %></td>
+					<td><%= qlist[i].question %></td>
+				</tr>
+			<% } %>	
+			</tbody>
+	</table>
+	<% if (pages > 0) { %>
+		<ul class="pagination">
+			<% if (current == 1) { %>
+				<li class="page-item disabled"><a class="page-link">First</a></li>
+			<% } else { %>
+				<li><a class="page-link" onclick="return hrefClick(1, '<%= pages %>');">First</a></li>
+			<% } %>
+			<% var i = (Number(current) > 5 ? Number(current) - 4 : 1) %>
+			<% if (i !== 1) { %>
+				<li class="page-item disabled"><a class="page-link">...</a></li>
+			<% } %>
+			<% for (; i <= (Number(current) + 4) && i <= pages; i++) { %>
+				<% if (i == current) { %>
+					<li class="page-item active hightlight"><a class="page-link"> <%= i %></a></li>
+				<% } else { %>
+					<li><a class="page-link" onclick="return hrefClick('<%= i %>', '<%= pages %>');" ><%= i %></a></li>
+				<% } %>
+				<% if (i == Number(current) + 4 && i < pages) { %>
+					<li class="page-item disabled"><a class="page-link">...</a></li>
+				<% } %>
+			<% } %>
+			<% if (current == pages) { %>
+				<li class="page-item disabled"><a class="page-link">Last</a></li>
+			<% } else { %>
+				<li class="page-item"> <a class="page-link" onclick="return hrefClick('<%= pages %>', '<%= pages %>');">Last</a></li>
+			<% } %>
+		</ul>
+		<input type="hidden" id='h_currpage' value="<%= current %>">
+		<input type="hidden" id='h_perpage' value="<%= perpage %>">
+		<input type="hidden" id='h_totpages' value="<%= pages %>">		
+	<% } %>
+	<button type="button" class="btn btn-primary btn-vertical-bmargin" onclick="loadnewform()">Add Question</button>
+	<% include partials/footer %>
+</div>
+
+<div class="modal" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Search Party Advice</div>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5>Please Pick an Anwser</h5>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+	</div>
+</div>
+<form id='qesform' action="/question" method="post">
+	<input id='docid' type="hidden" name="docid" value="">
+	<input type="hidden" id='aaa' name="htt" value="" />
+</form>	
+<form id='pagform' action="/listq" method="post">
+	<input type="hidden" id='ppp' name="page" value="">
+	<input type="hidden" id='plen' name="perPage" value="">
+	<input type="hidden" id='lll' name="htt" value="" />
+</form>	
+
+<% include partials/script %>
+<script>
+$(document).ready(function() {
+    var dtable = $('#qtable').DataTable( {
+		"bPaginate": false,
+		"dom": '<"top"f>irt<"bottom"lp><"clear">'
+	});
+	//var n = $('#h_perpage').val();
+/* 	var cp = sessionStorage.getItem('qlist-cuurentpage');
+	if(cp == null) {sessionStorage.setItem('qlist-cuurentpage', $('#h_currpage').val()) };
+	var pp = sessionStorage.getItem('qlist-perpage');
+	if(pp == null) {sessionStorage.setItem('qlist-perpage', $('#h_perpage').val()) };
+	var tp = sessionStorage.getItem('qlist-totpages');
+	if(tp == null) {sessionStorage.setItem('qlist-totpages', $('#h_totpages').val()) };
+ */
+	sessionStorage.setItem('qlist-cuurentpage', $('#h_currpage').val());
+	sessionStorage.setItem('qlist-perpage', $('#h_perpage').val());
+	sessionStorage.setItem('qlist-totpages', $('#h_totpages').val());
+
+	$('#dd_perpage').val( sessionStorage.getItem('qlist-perpage') );
+});
+
+function perPageChange( newval ) {
+	//var cp = $('#h_currpage').val();
+	$('#ppp').val( sessionStorage.getItem('qlist-cuurentpage') );
+	$('#plen').val(newval);
+	$('#lll').val( sessionStorage.getItem('searchin_token') );
+
+	sessionStorage.setItem('qlist-perpage', newval );
+	$('#pagform').submit();
+};
+
+// selection & submit
+$("#qtable").on("dblclick", "tr", function(e) {
+	var id = $(this).children(':first').html();
+	document.getElementById("qesform").action = "/getquestion";
+	$('#aaa').val( sessionStorage.getItem('searchin_token') );
+	$('#docid').val(id);
+	$('#qesform').submit();
+});
+
+function loadnewform() {
+	$('#aaa').val( sessionStorage.getItem('searchin_token') );
+	$('#qesform').submit();
+}
+
+function hrefClick( page, pages ) {
+	//$('#plen').val( $('#h_perpage').val() );	sessionStorage.setItem('qlist-rowcount')
+
+	$('#ppp').val(page);	
+	$('#plen').val( sessionStorage.getItem('qlist-perpage') );		
+	$('#lll').val( sessionStorage.getItem('searchin_token') );
+
+	sessionStorage.setItem('qlist-cuurentpage', page );
+	$('#pagform').submit();
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="../stylesheets/style.css">
+	<script src="../javascripts/jquery-3.3.1.min.js"></script>
+	<script src="../bootstrap/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+	<div class="spborder">
+	<h4><%= page %></h4>
+	<form id"nufrm" action="/player/update" method="POST">
+		<input type="hidden" id='hdd' name="htt" value="<%= token %>" />
+		<hr>
+		<div id='errors'></div>
+		<div class="form-group">	
+			<label for="uname">Player Name: ( <i>What other players see in-game and the only data ever exposed to other players.</i> )</label><br/>
+			<input class="form-control font-weight-bold" placeholder="Enter Username; 3 up to 26 characters" name="uname" pattern=".{3,26}" required title="3 to 26 characters" maxlength="26" value= '<%= username %>' autofocus required>
+		</div>
+		<div class="form-group">	
+			<label for="fname">First Name:</label><br/>
+			<input class="form-control font-weight-bold" placeholder="Enter First Name; 3 up to 26 characters" id='fname' name="fname" pattern=".{3,26}" required title="3 to 26 characters" maxlength="26" value='<%= fname %>' autofocus required>
+		</div>
+		<div class="form-group">	
+			<label for="lname">Last Name:</label><br/>
+			<input class="form-control font-weight-bold" placeholder="Enter Last Name; 3 up to 26 characters" id='lname' name="lname" pattern=".{3,26}" required title="3 to 26 characters" maxlength="26" value='<%= lname %>' autofocus required>
+		</div>
+		<div class="form-group">	
+			<label for="email">Email:</label><br/>
+			<input type="email" class="form-control font-weight-bold" placeholder="Enter email" name="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" title="@ and a period . character" value='<%= email %>' autofocus required>
+		</div>
+		<div class="form-group">
+			<label for="pwd">Password: ( Minimum of 8 characters )</label><br/>
+			<input id="pwd" type='password' class="form-control font-weight-bold" placeholder="Enter Password; 8 up to 26 characters" name="pwd" pattern=".{8,26}" required title="8 to 26 characters" maxlength="26" value='<%= pwd %>' required disabled>
+		</div>
+		<div class="form-group">	
+			<label for="bdate">Birthdate: ( Can be typed in if desired )</label><br/>
+			<input type='date' class="form-control font-weight-bold" id='bdate' name="bdate" value='<%= bdate %>' autofocus required>
+		</div>
+		<button type="submit" class="btn btn-primary"> Save Account</button>
+		<button type="button" class="btn btn-primary" onclick="history.back()">Cancel</button>
+	</form>
+	</div><br>
+	<% include ../../searchparty/views/partials/footer %>
+</div>
+<script>
+</script>
+</body>
+</html>
