@@ -8,4 +8,6 @@ searchparty is the User Client
 spadmin is the Admin app  
 other code combinded is the headless 'server,' routes, API, model, et cetera  
 
+More Information To Come...  
+
 Copyright (c) 2024 Kent Thompson, All rights reserved.
