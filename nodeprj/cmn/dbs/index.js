@@ -5,7 +5,6 @@ var clientDB = null;
 
 module.exports = {
     initDB: function() {
-		//const url = 'mongodb://74.208.242.240:27017'; // connection URL
 		const url = 'mongodb://127.0.0.1:27017';        // connection URL
         const dbName = 'sa_db';                         // database name
 		
