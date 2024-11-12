@@ -1,2 +1,4 @@
 /FileZilla.xml
 .vscode/
+nohup.out
+*.code-workspace
